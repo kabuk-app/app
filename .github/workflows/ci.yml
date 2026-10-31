@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  unit:
+    name: Lint, unit tests, coverage, e2e
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - name: svelte-check
+        run: bun run check
+      - name: Unit tests with 100% coverage
+        run: bun run test:coverage
+      - name: Install Playwright browser
+        run: bunx playwright install --with-deps chromium
+      - name: Scenario tests
+        run: bun run test:e2e
+
+  rust:
+    name: Rust lint
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - name: Install Linux deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential librsvg2-dev
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      # tauri-build needs the frontend dist to exist.
+      - run: bun run build
+      - run: cargo fmt --check
+        working-directory: src-tauri
+      - run: cargo clippy --locked -- -D warnings
+        working-directory: src-tauri
+
+  desktop:
+    name: Desktop build · ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-22.04,     name: linux-x64,     target: '' }
+          - { os: ubuntu-22.04-arm, name: linux-arm64,   target: '' }
+          - { os: windows-latest,   name: windows-x64,   target: '' }
+          - { os: windows-11-arm,   name: windows-arm64, target: '' }
+          - { os: macos-15-intel,   name: macos-x64,     target: '' }
+          - { os: macos-latest,     name: macos-arm64,   target: '' }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Linux deps
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential librsvg2-dev libxdo-dev libssl-dev
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          key: ${{ matrix.name }}
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run tauri build --debug --no-bundle
+
+  android:
+    name: Android debug build
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+      - name: Install NDK
+        run: sdkmanager "ndk;27.2.12479018" "platforms;android-36" "build-tools;36.0.0"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          key: android
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - name: Generate the Android project
+        run: bun run tauri android init --ci
+        env:
+          NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.2.12479018
+      - name: Build debug APK
+        run: bun run tauri android build --debug --apk
+        env:
+          NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.2.12479018

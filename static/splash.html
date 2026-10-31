@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Kabuk</title>
+		<style>
+			:root {
+				color-scheme: light dark;
+				--color-bg: #ffffff;
+				--color-fg: #111111;
+			}
+			@media (prefers-color-scheme: dark) {
+				:root {
+					--color-bg: #111111;
+					--color-fg: #eeeeee;
+				}
+			}
+			html,
+			body {
+				height: 100%;
+				margin: 0;
+			}
+			body {
+				display: grid;
+				place-items: center;
+				background: var(--color-bg);
+				color: var(--color-fg);
+				font-family: system-ui, sans-serif;
+				font-size: 2rem;
+				letter-spacing: 0.05em;
+				-webkit-user-select: none;
+				user-select: none;
+			}
+		</style>
+	</head>
+	<body>Kabuk</body>
+</html>

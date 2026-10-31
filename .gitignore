@@ -1,0 +1,12 @@
+node_modules
+/build
+/build-web
+/.svelte-kit
+/coverage
+/test-results
+/playwright-report
+/src-tauri/target
+/src-tauri/gen
+/target
+.DS_Store
+Thumbs.db

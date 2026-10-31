@@ -1,0 +1,44 @@
+/* Semantic variables only. Visual design arrives later from Claude Design. */
+:root {
+	color-scheme: light dark;
+	--color-bg: #ffffff;
+	--color-fg: #111111;
+	--color-muted: #666666;
+	--color-border: #cccccc;
+	--color-accent: #0b5fff;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme]) {
+		--color-bg: #111111;
+		--color-fg: #eeeeee;
+		--color-muted: #999999;
+		--color-border: #444444;
+		--color-accent: #6b9bff;
+	}
+}
+
+:root[data-theme='light'] {
+	color-scheme: light;
+	--color-bg: #ffffff;
+	--color-fg: #111111;
+	--color-muted: #666666;
+	--color-border: #cccccc;
+	--color-accent: #0b5fff;
+}
+
+:root[data-theme='dark'] {
+	color-scheme: dark;
+	--color-bg: #111111;
+	--color-fg: #eeeeee;
+	--color-muted: #999999;
+	--color-border: #444444;
+	--color-accent: #6b9bff;
+}
+
+body {
+	margin: 0;
+	background: var(--color-bg);
+	color: var(--color-fg);
+	font-family: system-ui, sans-serif;
+}

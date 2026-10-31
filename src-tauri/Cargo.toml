@@ -1,0 +1,19 @@
+[package]
+name = "kabuk-app"
+version = "0.0.1"
+edition = "2024"
+license = "GPL-3.0-or-later"
+authors = ["Kabuk contributors"]
+rust-version = "1.88"
+description = "Kabuk desktop and mobile shell around the SvelteKit UI."
+
+[lib]
+name = "kabuk_app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+kabuk-proto = { git = "https://github.com/kabuk-app/proto" }
