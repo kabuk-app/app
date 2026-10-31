@@ -4,8 +4,6 @@ name: Release
 # Installers are not built or signed yet.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
 
 permissions:
   contents: write
